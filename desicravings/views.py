@@ -3,7 +3,6 @@ from django.http.response import HttpResponse, JsonResponse
 
 import mysql.connector
 from mysql.connector import Error
-from tabulate import tabulate
 from datetime import datetime
 import os
 from django.conf import settings
