@@ -1,9 +1,7 @@
 cloudinary==1.31.0
 dj-database-url==1.2.0
 Django==4.1.6
-django-embed-video==1.4.9
 django-heroku==0.3.1
 mysql-connector==2.2.9
 mysql-connector-python==8.0.32
-numpy==1.20.2
 psycopg2==2.9.5
