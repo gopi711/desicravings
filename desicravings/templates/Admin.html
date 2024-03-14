@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desi Cravings</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 20px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .nav-link:hover {
+            background-color: #ccc;
+        }
+        /* Toggle Switch Styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-bottom: 20px; /* Added margin to create space between the switch and textarea */
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Textarea Style */
+        textarea {
+            width: 100%;
+            height: 100px; /* Adjust height as needed */
+            resize: vertical; /* Allow vertical resizing */
+            margin-bottom: 20px; /* Add margin to create space between textarea and next element */
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            display: block; /* Ensure textarea is always block-level element */
+        }
+        .toggle-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="row">
+            <div class="col">
+                <h1 style='cursor: pointer;'>Desi Cravings</h1>
+            </div>
+            <div class="col" >
+                <div class="text-right">
+                    {% csrf_token %}
+                    <h1 style='cursor:pointer'>{{username_data}}</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav nav-tabs">
+        <form id="servce-form" method="post" action='/adminMenu/'>
+            {% csrf_token %}
+            <a class="nav-link" href="#" onclick="submitSrvceForm()">Menu</a>
+        </form>
+
+        <form id="addreading-form" method="post" action='/Inventory/'>
+            {% csrf_token %}
+            <a class="nav-link" href="#" onclick="submitpstbillsForm()">Inventory</a>
+        </form>
+
+        <form id="disctn-form" method="post" action='/Sales/'>
+            {% csrf_token %}
+            <a class="nav-link" href="#" onclick="submitDiscForm()">Sales</a>
+        </form>
+
+        <form id="logout-form" method="post" action='/Logout/'>
+            {% csrf_token %}
+            <a class="nav-link" href="#" onclick="logout()">Logout</a>
+        </form>
+    </nav>
+
+    <!-- Toggle Switch Container -->
+    <form method='post' id='login-form' action='/login/'>
+        {% csrf_token %}
+        <div class="toggle-container">
+            <div class="text-right">
+                <span class="switch-label">Accept Orders</span>
+                <!-- Toggle Switch -->
+                <label class="switch">
+                    <input type="checkbox" id="toggleSwitch" {% if status == 'Accept' %}checked{% endif %} onchange="toggleTextArea()">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div id="textarea-container">
+                <!-- Textarea -->
+                <textarea id="orderMessage" name="orderMessage" placeholder="Display the message to be written on the Customers Order Page for not Accepting the Orders">{% if status == 'Do Not Accept' %}{{ msg }}{% endif %}</textarea>
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" style="display: none;">Submit</button>
+            </div>
+            <input type='hidden' name='username' value='{{username}}'></input>
+            <input type='hidden' name='password' value='{{password}}'></input>
+            <input type='hidden' id="toggleswitch" name='toggleswitch' value='{% if status == "Accept" %}on{% else %}off{% endif %}'></input>
+        </div>
+    </form>
+</div>
+
+<input type='hidden' id='togglevalfromdb' name='togglevalfromdb' value='{% if status == "Accept" %}on{% else %}off{% endif %}'></input>
+
+<div class="container">
+    <!-- Display order details -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Order Name</th>
+                <th>Item Name</th>
+                <th>Phone Number</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Spicy Level</th>
+                <th>Order Instructions</th>
+                <th>Delivery Option</th>
+                <th>Pickup Time</th>
+                <th>Order Date and Time</th>
+                <th>Actions</th> <!-- New column for buttons -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.order_id }}</td>
+                <td>{{ order.order_name }}</td>
+                <td>{{ order.item_name }}</td>
+                <td>{{ order.phone_number }}</td>
+                <td>{{ order.quantity }}</td>
+                <td>{{ order.status }}</td>
+                <td>{{ order.spicy_level }}</td>
+                <td>{{ order.order_instructions }}</td>
+                <td>{{ order.delivery_option }}</td>
+                <td>{{ order.pickup_time }}</td>
+                <td>{{ order.order_datetime }}</td>
+                <td>
+                    <!-- Buttons for completing and canceling orders -->
+                    <button type="button" class="btn btn-success" onclick="completeOrder('{{ order.order_id }},{{ order.item_name }}')">Complete Order</button>
+                    <button type="button" class="btn btn-danger" onclick="cancelOrder('{{ order.order_id }},{{ order.item_name }}')">Cancel Order</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<form method="post" action='/admin-cancel-item/' id='admincancel'>
+	{% csrf_token %}
+    <input type='hidden' id='orderidcancel' name='orderidcancel' value=''></input>
+</form>
+
+<script>
+    var formSubmitted = false; // Flag to track form submission
+
+    function logout() {
+        document.getElementById('logout-form').submit();
+    }
+
+    function submitSrvceForm(){
+        document.getElementById('servce-form').submit();
+    }
+
+    function submitDiscForm(){
+        document.getElementById('disctn-form').submit();
+    }
+
+    function submitpstbillsForm(){
+        document.getElementById('addreading-form').submit();
+    }
+
+    function toggleTextArea() {
+        var textarea = document.getElementById('orderMessage');
+        var toggleSwitch = document.getElementById('toggleSwitch');
+        var submitBtn = document.getElementById('submitBtn');
+        var textareaContainer = document.getElementById('textarea-container');
+        var togglevalfromdb=document.getElementById('togglevalfromdb').value;
+        console.log(togglevalfromdb);
+
+        // Check the initial state of the toggle switch
+        if (toggleSwitch.checked) {
+            textarea.style.display = 'none'; // If toggle switch is on, hide textarea
+            submitBtn.style.display = 'none'; // Hide submit button
+            document.getElementById('toggleswitch').value = 'on'; // Update hidden input value
+            if(togglevalfromdb=='off'){
+                document.getElementById('login-form').submit();
+            }
+        } else {
+            textarea.style.display = 'block'; // If toggle switch is off, show textarea
+            submitBtn.style.display = 'block'; // Show submit button
+            document.getElementById('toggleswitch').value = 'off'; // Update hidden input value
+            {% if status == 'Do Not Accept' %}
+            textarea.value = '{{ msg }}'; // Set textarea value if status is 'Do Not Accept'
+            {% endif %}
+        }
+
+    }
+
+    // Function to complete an order
+    function completeOrder(orderId) {
+        // Assuming you have a function to handle completing orders
+        console.log("Order completed:", orderId);
+		document.getElementById('orderidcancel').value='Complete-'+orderId;
+		document.getElementById('admincancel').submit();
+		// Add your logic here to mark the order as completed
+    }
+
+    // Function to cancel an order
+    function cancelOrder(orderId) {
+        // Assuming you have a function to handle canceling orders
+        console.log("Order canceled:", orderId);
+		document.getElementById('orderidcancel').value='Cancel-'+orderId;
+		document.getElementById('admincancel').submit();
+		// Add your logic here to mark the order as canceled
+    }
+
+    // Call toggleTextArea() on page load to set initial state of textarea
+    window.onload = toggleTextArea;
+</script>
+
+</body>
+</html>

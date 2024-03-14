@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desi Cravings</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 20px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .order-item {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        .order-item img {
+            max-width: 100px;
+            max-height: 100px;
+            margin-right: 20px;
+        }
+        .order-item h3 {
+            margin-top: 0;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .cancel-btn, .complete-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .cancel-btn {
+            background-color: red;
+            color: white;
+            border: none;
+        }
+        .cancel-btn:hover {
+            background-color: darkred;
+        }
+        .complete-btn {
+            background-color: green;
+            color: white;
+            border: none;
+        }
+        .complete-btn:hover {
+            background-color: darkgreen;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="row">
+            <div class="col">
+                <h1 style='cursor: pointer;'>Desi Cravings</h1>
+            </div>
+            <div class="col" >
+                <div class="text-right">
+                    {% csrf_token %}
+                    <h1 style='cursor:pointer'>{{ username_data }}</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+</div>
+
+<div class="container">
+    <!--<h1>Order Id: {{ orderid }}</h1>
+    <!-- Loop through order items -->
+    {% for item in order_items %}
+    <div class="order-item">
+        <div class="row">
+            <div class="col-md-2">
+                <img src="{{ item.image }}" alt="{{ item.name }}" class="img-fluid">
+            </div>
+            <div class="col-md-7">
+                <h3>{{ item.name }}</h3>
+                <p>Quantity: {{ item.quantity }}</p>
+                <p>OrderId: {{ item.orderid }}</p>
+                <p class="order-item-status">Status: {{ item.status }}</p>
+            </div>
+            <div class="col-md-3">
+                <div class="btn-container">
+                    {% if item.status != 'Completed' and item.status != 'Cancelled' %}
+                    <!-- Cancel Item Button -->
+                    <button class="cancel-btn" data-item-id="{{ item.id }}" data-order-id="{{ item.orderid }}">Cancel Item</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<form method="post" action='/user-cancel-item/' id='track'>
+	{% csrf_token %}
+    <input type='hidden' id='orderid' name='orderid' value=''></input>
+    <input type='hidden' id='itemname' name='itemname' value='1'></input>
+</form>
+
+<script>
+    $(document).ready(function() {
+        // Event listener for Cancel Item button
+        $('.cancel-btn').click(function() {
+            var itemName = $(this).closest('.order-item').find('h3').text().trim();
+            var orderId = $(this).data('order-id'); // Retrieve orderId from data attribute
+            // Log orderId and itemName
+            console.log("OrderId:", orderId, "Item canceled:", itemName);
+			document.getElementById('orderid').value=orderId;
+            // Assuming you have a function to handle canceling items
+            cancelItem(itemName);
+        });
+
+        // Function to handle canceling items
+        function cancelItem(itemName) {
+            // Perform actions to cancel the item, such as updating the UI
+            //console.log("Item canceled:", itemName);
+            document.getElementById('itemname').value=itemName;
+			document.getElementById('track').submit();
+        }
+    });
+</script>
+
+</body>
+</html>

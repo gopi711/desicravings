@@ -1,0 +1,173 @@
+<!-- menu_items.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desi Cravings</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	
+	
+    <header>
+	
+	<div class="container">
+	  <div class="row">
+			<div class="col">
+				<h1 style='cursor: pointer;'>Desi Cravings</h1>
+			</div>
+		<div class="col" >
+		  <div class="text-right">
+			{% csrf_token %}
+			<h1 style='cursor:pointer'>{{username_data}}</h1>
+		  </div>
+		</div>
+	  </div>
+	</div>
+    </header>
+	
+	<style>
+      header {
+        background-color: #007bff;
+        color: #ffffff;
+        padding: 20px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 36px;
+        font-weight: bold;
+      }
+	  .nav-link:hover {
+		background-color: #ccc;
+	  }
+    </style>
+	
+	
+</head>
+<body>
+<nav class="nav nav-tabs">
+
+  <form id="servce-form" method="post" action='/adminMenu/'>
+    {% csrf_token %}
+    <a class="nav-link" href="#" onclick="submitSrvceForm()">Menu</a>
+</form>
+  
+  <form id="addreading-form" method="post" action='/Inventory/'>
+    {% csrf_token %}
+    <a class="nav-link" href="#" onclick="submitpstbillsForm()">Inventory</a>
+</form>
+    
+<form id="disctn-form" method="post" action='/Sales/'>
+    {% csrf_token %}
+	<a class="nav-link" href="#" onclick="submitDiscForm()">Sales</a>
+</form>
+
+
+<form id="logout-form" method="post" action='/Logout/'>
+    {% csrf_token %}
+    <a class="nav-link" href="#" onclick="logout()">Logout</a>
+</form>
+</nav>
+<nav class="nav nav-tabs">
+
+  <form id="additem" method="post" action='/addItem/'>
+    {% csrf_token %}
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addItemModal">
+      Add Item
+    </button>
+</form>
+  
+  <form id="updateitem" method="post" action='/UpdateItem/'>
+    {% csrf_token %}
+    <a class="nav-link" href="#" onclick="UpdateItem()">Update Item</a>
+</form>
+    
+<form id="deleteitem" method="post" action='/DeleteItem/'>
+    {% csrf_token %}
+	<a class="nav-link" href="#" onclick="DeleteItem()">Delete Item</a>
+</form>
+
+
+</nav>
+
+
+    
+
+<!-- add_menu_item_modal.html -->
+<div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addItemModalLabel">Add Menu Item</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action='/addnewitem/' enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="itemName">Item Name:</label>
+            <input type="text" class="form-control" id="itemName" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="itemPrice">Item Price:</label>
+            <input type="number" class="form-control" id="itemPrice" name="price" min="0" step="0.01" required>
+          </div>
+		  <div class="form-group">
+            <label for="itemdescription">Item Description:</label>
+            <input type="text" class="form-control" id="itemdescription" name="itemdescription" required>
+          </div>
+          <div class="form-group">
+            <label for="itemImage">Item Image:</label>
+			<input type="file" name="image1" accept="image/*">
+          </div>
+		  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Add</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<h1>Menu Items</h1>
+    <ul>
+    {% for item in menu_items %}
+        <li>{{ item.name }} - ${{ item.price }}</li>
+        <p>{{ item.description }}</p>
+    {% empty %}
+        <li>No menu items available.</li>
+    {% endfor %}
+    </ul>
+
+<script>
+function logout() {
+    document.getElementById('logout-form').submit();
+}
+function submitSrvceForm(){
+	document.getElementById('servce-form').submit();
+}
+function submitDiscForm(){
+	document.getElementById('disctn-form').submit();
+}
+function submitpstbillsForm(){
+	document.getElementById('addreading-form').submit();
+}
+function UpdateItem(){
+	document.getElementById('updateitem').submit();
+}
+function DeleteItem(){
+	document.getElementById('deleteitem').submit();
+}
+</script>
+
+</body>

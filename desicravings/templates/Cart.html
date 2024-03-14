@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desi Cravings</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 20px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1 style='cursor: pointer;'>Desi Cravings</h1>
+            </div>
+            <div class="col" >
+                <div class="text-right">
+                    {% csrf_token %}
+                    <h1 style='cursor:pointer'>{{username_data}}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            Cart Items
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Item Price</th>
+                        <th>Total Price</th>
+                    </tr>
+                </thead>
+                <tbody id="cartItemsList">
+                    <!-- Cart items will be dynamically added here -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right"><strong>Total Amount:</strong></td>
+                        <td id="totalAmount">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="text-right">
+                            <button id="placeOrderBtn" class="btn btn-primary">Place Your Order</button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<form method='post' action='/personal_info/' id='personalinfo'>
+	{% csrf_token %}
+	<input type='hidden' name='personal_info' id='personal_info'></input>
+</form>
+<input type='hidden' id='cartitemslist' value="{{cartitemslist}}"></input>
+
+<script>
+    // Sample cart items string
+    var cartItemsStr = document.getElementById('cartitemslist').value;
+
+    // Parse cart items string and display them
+    document.addEventListener('DOMContentLoaded', function() {
+        var cartItemsList = document.getElementById('cartItemsList');
+        var totalAmount = 0;
+
+        if (cartItemsStr) {
+            // Split cart items string by comma and loop through each item
+            cartItemsStr.split(', ').forEach(function(item) {
+                // Split each item by hyphen to get name, quantity, and price
+                var parts = item.split(' - ');
+                var name = parts[0];
+                var quantity = parseInt(parts[1].split(': ')[1].split(',')[0]);
+				console.log(parts);
+                var price = parseFloat(parts[1].split(': ')[2].replace('$', ''));
+                var tot_price = parseFloat(price * quantity);
+				var list1='';
+                // Create table row for each item in the cart
+                var row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${quantity}</td>
+                    <td>$${price.toFixed(2)}</td>
+                    <td>$${tot_price.toFixed(2)}</td>
+                `;
+                cartItemsList.appendChild(row);
+
+                // Calculate total amount
+                totalAmount += tot_price;
+				list1=document.getElementById('personal_info').value;
+				list1=list1+name+'		'+quantity+'	'+price.toFixed(2)+'	'+tot_price.toFixed(2)+',';
+				document.getElementById('personal_info').value=list1;
+            });
+        }
+
+        // Update total amount
+        document.getElementById('totalAmount').textContent = '$' + totalAmount.toFixed(2);
+		document.getElementById('personal_info').value=document.getElementById('personal_info').value+',$' + totalAmount.toFixed(2);
+		console.log(document.getElementById('personal_info').value);
+    });
+
+    // Handle place order button click
+    document.getElementById('placeOrderBtn').addEventListener('click', function() {
+        // Your logic for placing the order goes here
+        document.getElementById('personalinfo').submit();
+    });
+</script>
+
+</body>
+</html>

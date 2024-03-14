@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desi Cravings</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+	<style>
+        header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 20px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1 style='cursor: pointer;'>Desi Cravings</h1>
+            </div>
+            <div class="col" >
+                <div class="text-right">
+                    {% csrf_token %}
+                    <h1 style='cursor:pointer'>{{username_data}}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="container mt-5">
+    <form id="orderForm" method='post' action='/placeorder/'>
+	{% csrf_token %}
+        <div class="form-group">
+            <label for="orderName">Order Name *</label>
+            <input type="text" class="form-control" id="orderName" name="orderName" placeholder="Enter your name" required>
+        </div>
+        <div class="form-group">
+			<label for="phoneNumber">Phone Number *</label>
+			<input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" pattern="[0-9]{10}" required>
+			<small class="form-text text-muted">Please enter a 10-digit phone number.</small>
+		</div>
+        <div class="form-group">
+            <label for="spicyLevelSelect">Spicy Level *</label>
+            <select class="form-control" id="spicyLevelSelect" name="spicyLevelSelect" required>
+                <option value="">Select spicy level</option>
+                <option value="noSpicy">No Spicy</option>
+                <option value="mild">Mild</option>
+                <option value="medium">Medium</option>
+                <option value="spicy">Spicy</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="orderInstructions">Order Instructions</label>
+            <textarea class="form-control" id="orderInstructions" name="orderInstructions" rows="3" placeholder="Specify any instructions for your order"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="deliveryOption">Delivery Option *</label>
+            <select class="form-control" id="deliveryOption" name="deliveryOption" required>
+                <option value="">Select an option</option>
+                <option value="dineIn">Dine-in</option>
+                <option value="pickUp">Pick-Up</option>
+            </select>
+        </div>
+        <div class="form-group" id="pickupTime" style="display: none;">
+            <label for="pickupTimeSelect">Pick-Up Time</label>
+            <select class="form-control" id="pickupTimeSelect" name="pickupTimeSelect">
+                <!-- Options will be dynamically added here -->
+            </select>
+        </div>
+		<input type='hidden' name='orderlistitems' id='orderlistitems' value="{{orderlistitems}}"></input>
+		<input type="hidden" name="orderPersonalInfo" id="orderPersonalInfo">
+        <button type="submit" class="btn btn-primary float-right">Complete Order</button>
+    </form>
+</div>
+
+<script>
+    // Function to generate next nearest half an hour
+    function generateNearestHalfHour() {
+        var times = [];
+        var currentTime = new Date();
+        var currentHour = currentTime.getHours();
+        var currentMinute = currentTime.getMinutes();
+        var pickupHour;
+
+        if (currentMinute <= 30) {
+            pickupHour = currentHour;
+        } else {
+            pickupHour = currentHour + 1;
+        }
+
+        // Generate pickup times from the next nearest half an hour to 2:00 AM
+        for (var hour = pickupHour; hour < 26; hour++) {
+            var time = (hour % 24) + ":30";
+            times.push(time);
+            time = ((hour + 1) % 24) + ":00";
+            if (time === "0:00") time = "0:00"; // Corrected to 0:00
+            times.push(time);
+        }
+        return times;
+    }
+
+    // Update pickup time and spicy level options if pickup is selected
+    document.getElementById('deliveryOption').addEventListener('change', function() {
+        var pickupTimeDiv = document.getElementById('pickupTime');
+        if (this.value === 'pickUp') {
+            pickupTimeDiv.style.display = 'block';
+            var pickupTimeSelect = document.getElementById('pickupTimeSelect');
+            var times = generateNearestHalfHour();
+            times.forEach(function(time) {
+                var option = document.createElement('option');
+                option.text = time;
+                pickupTimeSelect.add(option);
+            });
+        } else {
+            pickupTimeDiv.style.display = 'none';
+        }
+    });
+
+	// Form submission event listener
+    document.getElementById('orderForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+        // Gather all the form data
+        var formData = new FormData(this);
+        var orderPersonalInfo = "";
+        // Convert form data to a JSON object
+        for (const [key, value] of formData.entries()) {
+            orderPersonalInfo += key + "-" + value + ",";
+        }
+        orderPersonalInfo = orderPersonalInfo.slice(0, -1); // Remove the last comma
+        // Assign the order personal info to the hidden input field
+        document.getElementById('orderPersonalInfo').value = orderPersonalInfo;
+        // Submit the form
+        this.submit();
+    });
+</script>
+
+</body>
+</html>

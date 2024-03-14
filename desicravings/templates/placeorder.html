@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desi Cravings</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 20px;
+        }
+        .order-summary {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .order-summary h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="row">
+            <div class="col">
+                <h1 style='cursor: pointer;'>Desi Cravings</h1>
+            </div>
+            <div class="col">
+                <div class="text-right">
+				<form method="post" id='trking' action="/track/">
+					{% csrf_token %}
+                    <a href="#" style="color: white;" onclick="submittrking()">Track Order</a>
+					<input type="hidden" name="orderid" value="{{orderid}}"></input>
+                    <h1 style='cursor:pointer'>{{ username_data }}</h1>
+				</form>
+                </div>
+            </div>
+        </div>
+    </header>
+</div>
+<input type="hidden" name="itemslist" id="itemslist" value="{{ itemslist }}"></input>
+<div class="container">
+    <div class="order-summary">
+        <h2>Order Summary</h2>
+        <hr>
+        <p><b>Order ID: </b>{{ orderid }} <span style="float:right;"><b>Order Date and Time:</b> {{ currentdate_time }}</span></p>
+        <hr>
+        <div id="order-items"></div>
+        <hr>
+        <div id="total-amount"></div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Get the value of itemslist
+        var itemslist = $('#itemslist').val();
+
+        // Split the itemslist by commas
+        var items = itemslist.split(',');
+
+        // Initialize variables for total amount calculation
+        var totalAmount = 0; // Initialize total amount to 0
+
+        // Initialize order summary string
+        var orderSummary = '';
+
+        // Iterate through each item and populate the order summary, excluding the last two items
+        for (var i = 0; i < items.length - 2; i++) {
+            // Split each item by spaces
+            var details = items[i].trim().split(/\s+/);
+
+            // Extract item details
+            var quantity = details[details.length - 3]; // Last but 3 is the quantity
+            var price = details[details.length - 2]; // Last but 2 is the single unit price
+            var totalPrice = details[details.length - 1]; // Last one is the total price
+            var itemName = details.slice(0, -3).join(' '); // Merge all the remaining values from first until last but 3
+
+            // Update total amount
+            totalAmount += parseFloat(totalPrice);
+
+            // Update order summary
+            orderSummary += '<div>' + itemName + ' ' + quantity + ' * ' + price + ' = ' + totalPrice + '</div>';
+        }
+
+        // Display order summary
+        $('#order-items').html(orderSummary);
+
+        // Display total amount
+        $('#total-amount').text('Total Amount: $' + totalAmount.toFixed(2));
+        document.getElementById('TotalAmountonitems').innerHTML='$'+totalAmount.toFixed(2);
+    });
+	function submittrking(){
+		document.getElementById('trking').submit();
+	}
+</script>
+
+</body>
+</html>

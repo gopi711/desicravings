@@ -1,0 +1,12 @@
+
+create table Menu_Items(ItemName varchar(1000) not null,ItemPrice float(5,2) not null,ItemDescription varchar(1000),ImageLoc varchar(1000),quantity int);
+
+create table Accept_Orders(id int,status varchar(50),message varchar(1000));
+
+create table orders_customers(orderid integer not null primary key, ordername varchar(400),phonenumber varchar(12),spicylevel varchar(20),orderInstructions varchar(1000),deliveryoption varchar(20),pickuptime varchar(20),order_date varchar(50));
+
+create table orders_items(orderid integer not null,itemname varchar(50),itemquantity integer,itemprice float(5,2),itemstatus varchar(100));
+
+{% load static %}
+{% static 'Shawarma.jpg' %}
+

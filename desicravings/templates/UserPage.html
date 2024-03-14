@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desi Cravings Menu</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f8f8;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    header {
+        background-color: #007bff;
+        color: #ffffff;
+        padding: 20px;
+        position: relative; /* Position relative for absolute positioning */
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 36px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .cart-icon {
+        position: absolute;
+        top: 20px; /* Adjust top position as needed */
+        right: 20px; /* Adjust right position as needed */
+    }
+
+    .cart-icon img {
+        position: relative;
+    }
+
+    .cart-quantity {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: red;
+        color: white;
+        font-size: 12px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        text-align: center;
+        display: none;
+    }
+
+    .menu {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .menu-item {
+        width: calc(33.33% - 20px); /* 33.33% minus margin */
+        margin-bottom: 20px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .menu-item-image {
+        width: 100%;
+        height: 120px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .menu-item-details {
+        padding: 20px;
+    }
+
+    .menu-item h3 {
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .menu-item p {
+        margin: 5px 0;
+        color: #666;
+    }
+
+    .menu-item span {
+        display: block;
+        margin-top: 5px;
+        font-size: 14px;
+        color: green; /* Default color for item added */
+    }
+
+    .menu-item input[type="number"] {
+        width: 40px;
+        text-align: center;
+    }
+
+    .menu-item button {
+        padding: 5px 10px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .menu-item button:hover {
+        background-color: #0056b3;
+    }
+
+    .out-of-order {
+        color: red;
+        font-weight: bold;
+    }
+
+    .quantity-text {
+        color: red;
+        font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+        .menu-item {
+            width: calc(50% - 20px); /* 50% minus margin */
+        }
+    }
+
+    @media (max-width: 576px) {
+        .menu-item {
+            width: 100%;
+        }
+    }
+	/* Add this CSS to your existing styles or your external stylesheet */
+	.track-order-link {
+		text-decoration: none;
+		color: #007bff; /* Change color to blue */
+		font-weight: bold;
+		padding: 5px 10px;
+		border: 2px solid #007bff; /* Change border color to blue */
+		border-radius: 20px;
+		transition: background-color 0.3s, color 0.3s;
+	}
+
+	.track-order-link:hover {
+		background-color: #007bff; /* Change background color to blue */
+		color: #ffffff; /* Change color to white */
+	}
+
+</style>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1>Desi Cravings</h1>
+            </div>
+            <div class="col text-right">
+                {% csrf_token %}
+                <h1>{{username_data}}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="cart-icon" id="cart-icon">
+        <!-- Add your cart icon here -->
+        {% load static %}
+        <img src="{% static 'cart.png' %}" alt="Cart Icon" width="50" style="cursor: pointer;">
+        <div class="cart-quantity" id="cart-quantity">0</div>
+    </div>
+</header><br>
+<div class="container">
+    <div class="row justify-content-center"> <!-- Center the link -->
+        <div class="col text-center">
+            <a href="/track-order" class="track-order-link">Track Order</a> <!-- Move Track Order link here -->
+        </div>
+    </div>
+</div>
+<br>
+<div class="container">
+    <div class="menu" id="menu">
+        <!-- Menu items will be dynamically added here -->
+    </div>
+</div>
+
+<form id='cartitems' action='/cart-items/' method='post'>
+{% csrf_token %}
+<input type='hidden' id='inputdata' value="{{menu_items}}"></input>
+<input type='hidden' name='cart-items' id='cart-items' value=""></input>
+</form>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+<script>
+    // Parse the JSON string to an array of objects
+    var menuItemsStr = document.getElementById('inputdata').value;
+    menuItemsStr = menuItemsStr.replace(/'/g, '"');
+    // Parse the JSON string to create the menuData array
+    menuData = JSON.parse(menuItemsStr);
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuContainer = document.getElementById('menu');
+        const cartQuantity = document.getElementById('cart-quantity');
+        const cartItemsInput = document.getElementById('cart-items');
+        let totalItemsInCart = 0;
+        let cartItems = {}; // Store items in cart
+
+        // Function to update cart quantity
+        function updateCartQuantity() {
+            cartQuantity.textContent = totalItemsInCart;
+            if (totalItemsInCart > 0) {
+                cartQuantity.style.display = 'block'; // Show cart quantity if it's greater than 0
+            } else {
+                cartQuantity.style.display = 'none'; // Hide cart quantity if it's 0
+            }
+        }
+
+        // Function to update cart icon quantity
+        function updateCartIconQuantity() {
+            const iconQuantity = Object.values(cartItems).reduce((acc, curr) => acc + curr, 0);
+            cartQuantity.textContent = iconQuantity;
+        }
+
+        // Update the cart items input field
+        function updateCartItemsInput() {
+            const items = [];
+            for (const [itemName, quantity] of Object.entries(cartItems)) {
+                if (quantity > 0) {
+                    //items.push(`${itemName} - ${quantity}`);
+                    // Find the item in the menuData array
+                    const item = menuData.find(item => item.name === itemName);
+                    // Add item name, quantity, and price to the items array
+                    items.push(`${itemName} - Quantity: ${quantity},Price: ${item.price}`);
+                }
+            }
+            cartItemsInput.value = items.join(', ');
+        }
+
+        // Loop through menu data and create menu items
+        menuData.forEach(item => {
+            const menuItem = document.createElement('div');
+            menuItem.classList.add('menu-item');
+            menuItem.innerHTML = `
+                <div class="menu-item-image" style="background-image: url('${item.image}')"></div>
+                <div class="menu-item-details">
+                    <h3>${item.name}</h3>
+                    <p>${item.description}</p>
+                    <p>Price: ${item.price}</p>
+                    <span class="cart-message"></span> <!-- Display message here -->
+                    <div>
+                        <button class="decrement">-</button>
+                        <input type="number" value="0" min="0" max="${item.quantity}">
+                        <button class="increment">+</button>
+                        <span class="quantity-text" style="display: none;"></span>
+                    </div>
+                </div>
+            `;
+            menuContainer.appendChild(menuItem);
+        });
+
+        // Increment and Decrement button functionality
+        const buttons = document.querySelectorAll('.increment, .decrement');
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                const input = button.parentElement.querySelector('input[type="number"]');
+                const maxQuantity = parseInt(input.getAttribute('max'));
+                const currentValue = parseInt(input.value);
+                const itemName = button.parentElement.parentElement.querySelector('h3').textContent;
+                const quantityText = button.parentElement.querySelector('.quantity-text');
+                if (button.classList.contains('increment') && currentValue < maxQuantity) {
+                    input.value = currentValue + 1;
+                    cartItems[itemName] = currentValue + 1;
+                } else if (button.classList.contains('decrement') && currentValue > 0) {
+                    input.value = currentValue - 1;
+                    cartItems[itemName] = currentValue - 1;
+                }
+                quantityText.textContent = `Quantity: ${input.value}`;
+                quantityText.style.display = currentValue === 0 ? 'none' : 'block';
+                // Update cart icon quantity
+                totalItemsInCart = Object.values(cartItems).reduce((acc, curr) => acc + curr, 0);
+                updateCartQuantity();
+                updateCartIconQuantity();
+                updateCartItemsInput(); // Update cart items input field
+            });
+        });
+
+        // Add 'Out of Order' beside increment button if max quantity is 0
+        const quantityInputs = document.querySelectorAll('.menu-item input[type="number"]');
+        quantityInputs.forEach(input => {
+            const maxQuantity = parseInt(input.getAttribute('max'));
+            const incrementButton = input.parentElement.querySelector('.increment');
+            if (maxQuantity === 0) {
+                const outOfOrderText = document.createElement('span');
+                outOfOrderText.textContent = 'Out of Order';
+                outOfOrderText.classList.add('out-of-order');
+                incrementButton.insertAdjacentElement('afterend', outOfOrderText);
+            }
+        });
+        
+        // Submit the form when cart icon is clicked
+        const cartIcon = document.querySelector('.cart-icon img');
+        cartIcon.addEventListener('click', function() {
+            document.getElementById('cartitems').submit(); // Submit the form
+        });
+    });
+</script>
+
+</body>
+</html>
